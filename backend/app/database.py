@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 DATABASE_URL = "sqlite:///./weather.db"
 
@@ -15,3 +15,12 @@ SessionLocal = sessionmaker(
 )
 
 Base = declarative_base()
+
+
+# ✅ THIS IS WHAT YOU WERE MISSING
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

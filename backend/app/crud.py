@@ -3,23 +3,23 @@ from .models import WeatherSearch
 
 
 # CREATE
-def create_weather_search(
-    db: Session,
-    location: str,
-    start_date: str,
-    end_date: str
-):
-    weather_record = WeatherSearch(
-        location=location,
-        start_date=start_date,
-        end_date=end_date
+def create_weather_search(db: Session, data: dict):
+
+    record = WeatherSearch(
+        location=data.get("location"),
+        country=data.get("country"),
+        latitude=data.get("latitude"),
+        longitude=data.get("longitude"),
+        temperature=data.get("temperature"),
+        windspeed=data.get("windspeed"),
+        weathercode=data.get("weathercode")
     )
 
-    db.add(weather_record)
+    db.add(record)
     db.commit()
-    db.refresh(weather_record)
+    db.refresh(record)
 
-    return weather_record
+    return record
 
 
 # READ ALL
@@ -27,11 +27,8 @@ def get_all_weather_searches(db: Session):
     return db.query(WeatherSearch).all()
 
 
-# READ BY ID
-def get_weather_search_by_id(
-    db: Session,
-    record_id: int
-):
+# READ ONE
+def get_weather_search_by_id(db: Session, record_id: int):
     return (
         db.query(WeatherSearch)
         .filter(WeatherSearch.id == record_id)
@@ -40,13 +37,8 @@ def get_weather_search_by_id(
 
 
 # UPDATE
-def update_weather_search(
-    db: Session,
-    record_id: int,
-    location: str,
-    start_date: str,
-    end_date: str
-):
+def update_weather_search(db: Session, record_id: int, data: dict):
+
     record = (
         db.query(WeatherSearch)
         .filter(WeatherSearch.id == record_id)
@@ -54,11 +46,12 @@ def update_weather_search(
     )
 
     if not record:
-        return {"error": "Record not found"}
+        return None
 
-    record.location = location
-    record.start_date = start_date
-    record.end_date = end_date
+    record.location = data.get("location", record.location)
+    record.country = data.get("country", record.country)
+    record.temperature = data.get("temperature", record.temperature)
+    record.windspeed = data.get("windspeed", record.windspeed)
 
     db.commit()
     db.refresh(record)
@@ -67,10 +60,8 @@ def update_weather_search(
 
 
 # DELETE
-def delete_weather_search(
-    db: Session,
-    record_id: int
-):
+def delete_weather_search(db: Session, record_id: int):
+
     record = (
         db.query(WeatherSearch)
         .filter(WeatherSearch.id == record_id)
@@ -78,11 +69,9 @@ def delete_weather_search(
     )
 
     if not record:
-        return {"error": "Record not found"}
+        return None
 
     db.delete(record)
     db.commit()
 
-    return {
-        "message": "Record deleted successfully"
-    }
+    return {"message": "Deleted successfully"}

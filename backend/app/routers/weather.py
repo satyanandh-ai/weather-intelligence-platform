@@ -1,112 +1,140 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-import requests
 
-from .. import crud
+from ..database import get_db
 from ..schemas import WeatherCreate, WeatherUpdate
-from ..dependencies import get_db
-
-router = APIRouter(
-    prefix="/weather",
-    tags=["Weather"]
+from ..crud import (
+    create_weather_search,
+    get_all_weather_searches,
+    get_weather_search_by_id,
+    update_weather_search,
+    delete_weather_search
 )
+from ..services.weather_service import get_weather, get_forecast
+
+router = APIRouter(prefix="/weather", tags=["Weather"])
+
+CITY_COORDS = {
+    "Tokyo": (35.6895, 139.6917),
+    "London": (51.5074, -0.1278),
+    "New York": (40.7128, -74.0060),
+    "Delhi": (28.7041, 77.1025),
+    "Cuddapah": (14.47, 78.82),
+}
 
 
-# CREATE
+# --------------------
+# CRUD ENDPOINTS
+# --------------------
+
 @router.post("/")
 def create_weather(
     weather: WeatherCreate,
     db: Session = Depends(get_db)
 ):
-    return crud.create_weather_search(
+    return create_weather_search(
         db,
-        weather.location,
-        weather.start_date,
-        weather.end_date
+        weather.model_dump()
     )
 
 
-# READ ALL
 @router.get("/")
-def get_all_weather(
+def get_all(
     db: Session = Depends(get_db)
 ):
-    return crud.get_all_weather_searches(db)
+    return get_all_weather_searches(db)
 
 
-# READ BY ID
 @router.get("/{record_id}")
-def get_weather_by_id(
+def get_by_id(
     record_id: int,
     db: Session = Depends(get_db)
 ):
-    return crud.get_weather_search_by_id(
+    return get_weather_search_by_id(
         db,
         record_id
     )
 
 
-# UPDATE
 @router.put("/{record_id}")
-def update_weather(
+def update(
     record_id: int,
     weather: WeatherUpdate,
     db: Session = Depends(get_db)
 ):
-    return crud.update_weather_search(
+    return update_weather_search(
         db,
         record_id,
-        weather.location,
-        weather.start_date,
-        weather.end_date
+        weather.model_dump(exclude_unset=True)
     )
 
 
-# DELETE
 @router.delete("/{record_id}")
-def delete_weather(
+def delete(
     record_id: int,
     db: Session = Depends(get_db)
 ):
-    return crud.delete_weather_search(
+    return delete_weather_search(
         db,
         record_id
     )
 
 
-# CURRENT WEATHER API
+# --------------------
+# CURRENT WEATHER
+# --------------------
+
 @router.get("/current/{city}")
-def get_current_weather(city: str):
+async def current_weather(city: str):
 
-    geocode_url = (
-        f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1"
-    )
+    city = city.title()
 
-    geo_response = requests.get(geocode_url).json()
-
-    if "results" not in geo_response:
+    if city not in CITY_COORDS:
         return {
-            "error": "Location not found"
+            "error": "City not supported",
+            "available": list(CITY_COORDS.keys())
         }
 
-    location_data = geo_response["results"][0]
+    lat, lon = CITY_COORDS[city]
 
-    latitude = location_data["latitude"]
-    longitude = location_data["longitude"]
+    weather = await get_weather(lat, lon)
 
-    weather_url = (
-        f"https://api.open-meteo.com/v1/forecast"
-        f"?latitude={latitude}"
-        f"&longitude={longitude}"
-        f"&current_weather=true"
-    )
-
-    weather_response = requests.get(weather_url).json()
+    map_url = f"https://www.google.com/maps?q={lat},{lon}"
 
     return {
         "city": city,
-        "country": location_data.get("country"),
-        "latitude": latitude,
-        "longitude": longitude,
-        "weather": weather_response
+        "latitude": lat,
+        "longitude": lon,
+        "map": map_url,
+        "weather": weather
+    }
+
+
+# --------------------
+# FORECAST
+# --------------------
+
+@router.get("/forecast/{city}")
+async def forecast(city: str):
+
+    city = city.title()
+
+    if city not in CITY_COORDS:
+        return {
+            "error": "City not supported",
+            "available": list(CITY_COORDS.keys())
+        }
+
+    lat, lon = CITY_COORDS[city]
+
+    forecast_data = await get_forecast(lat, lon)
+
+    map_url = f"https://www.google.com/maps?q={lat},{lon}"
+
+    return {
+        "city": city,
+        "latitude": lat,
+        "longitude": lon,
+        "map": map_url,
+        "forecast": forecast_data
     }
