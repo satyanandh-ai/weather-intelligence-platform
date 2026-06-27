@@ -1,161 +1,312 @@
 # 🌦 Weather Intelligence Platform
 
-A FastAPI-based backend system that delivers real-time weather data, 5-day forecasts, and full CRUD operations with database persistence and export capabilities.
+## AI Engineer Internship Technical Assessment
 
-Built as part of an AI Engineer Internship Technical Assessment.
+A production-style weather intelligence backend built with **FastAPI**, **SQLite**, and **Open-Meteo API**.
 
----
-
-## 🚀 Features
-
-### 🌍 Weather APIs
-- Get real-time weather by city name
-- Get weather using GPS coordinates
-- 5-day weather forecast
-- Google Maps integration for each location
+The platform allows users to retrieve real-time weather data, view forecasts, store weather searches, manage historical records through CRUD operations, validate user input, and export weather data for further analysis.
 
 ---
 
-### 🗄 Database (CRUD System)
-- Create weather search records
-- Read all or specific records
-- Update existing records
-- Delete records
+# 🚀 Features
+
+## 🌍 Real-Time Weather Data
+
+* Current weather by city
+* Current weather by GPS coordinates
+* 5-day weather forecast
+* Google Maps integration for location visualization
 
 ---
 
-### 📤 Data Export
-- Export stored data as JSON
-- Export stored data as CSV
+## 🗄 Database Persistence
+
+Store weather search information including:
+
+* Location
+* Country
+* Date range
+* Coordinates
+* Temperature
+* Wind speed
+* Weather code
+
+SQLite is used for persistent storage via SQLAlchemy ORM.
 
 ---
 
-### 🌐 External API Integration
-- Uses Open-Meteo API
-- Provides real-time:
-  - Temperature 🌡
-  - Windspeed 💨
-  - Weather conditions ☁️
+## 🔄 CRUD Operations
+
+### Create
+
+Create and store weather search records.
+
+### Read
+
+View all previously stored weather searches or retrieve individual records.
+
+### Update
+
+Update weather information stored in the database.
+
+### Delete
+
+Remove records from the database.
 
 ---
 
-## 🏗 Tech Stack
+## ✅ Validation
 
-- FastAPI (Backend Framework)
-- SQLite (Database)
-- SQLAlchemy (ORM)
-- httpx (API Requests)
-- Python 3.10+
+Implemented validation for:
 
----
+* Invalid date formats
+* Invalid date ranges
+* Start date greater than end date
 
-## 📂 Project Structure
+Example:
 
-backend/
-└── app/
-    ├── main.py
-    ├── database.py
-    ├── models.py
-    ├── schemas.py
-    ├── crud.py
-    ├── services/
-    │   └── weather_service.py
-    └── routers/
-        └── weather.py
+```json
+{
+  "error": "start_date cannot be greater than end_date"
+}
+```
 
 ---
 
-## ⚙️ Setup Instructions
+## 📤 Export Features
 
-### 1. Clone Repository
+Export stored weather data into:
+
+### JSON
+
+```http
+GET /export/json
+```
+
+### CSV
+
+```http
+GET /export/csv
+```
+
+---
+
+## 🌐 API Integration
+
+### Open-Meteo API
+
+Used for:
+
+* Current weather
+* Forecast retrieval
+
+### Google Maps
+
+Used for:
+
+* Location visualization
+* Coordinate mapping
+
+---
+
+# 🏗 Architecture
+
+```text
+Client
+   │
+   ▼
+FastAPI Routes
+   │
+   ▼
+Weather Service
+   │
+   ▼
+Open-Meteo API
+   │
+   ▼
+SQLite Database
+```
+
+---
+
+# 📂 Project Structure
+
+```text
+weather-intelligence-platform/
+
+├── backend/
+│   └── app/
+│       ├── main.py
+│       ├── database.py
+│       ├── models.py
+│       ├── schemas.py
+│       ├── crud.py
+│       │
+│       ├── services/
+│       │   └── weather_service.py
+│       │
+│       └── routers/
+│           ├── weather.py
+│           └── export.py
+│
+├── requirements.txt
+├── README.md
+└── weather.db
+```
+
+---
+
+# ⚙️ Installation
+
+## Clone Repository
+
+```bash
 git clone https://github.com/satyanandh-ai/weather-intelligence-platform.git
 cd weather-intelligence-platform
+```
 
----
+## Create Virtual Environment
 
-### 2. Create Virtual Environment
+```bash
 python -m venv venv
+```
 
-Activate:
+## Activate Environment
+
+### Windows
+
+```bash
 venv\Scripts\activate
+```
 
----
+### Linux / macOS
 
-### 3. Install Dependencies
-pip install fastapi uvicorn sqlalchemy httpx
+```bash
+source venv/bin/activate
+```
 
----
+## Install Dependencies
 
-### 4. Run Server
+```bash
+pip install -r requirements.txt
+```
+
+## Run Application
+
+```bash
 uvicorn backend.app.main:app --reload
+```
 
 ---
 
-### 5. Open API Docs
+# 📚 API Documentation
+
+Swagger UI:
+
+```text
 http://127.0.0.1:8000/docs
+```
+
+OpenAPI Schema:
+
+```text
+http://127.0.0.1:8000/openapi.json
+```
 
 ---
 
-## 📡 API Endpoints
+# 📡 Available Endpoints
 
-### Weather APIs
-GET /weather/current/{city}
-GET /weather/forecast/{city}
-GET /weather/current/coords
+## Weather APIs
 
----
-
-### CRUD APIs
-GET /weather/
-POST /weather/
-GET /weather/{record_id}
-PUT /weather/{record_id}
-DELETE /weather/{record_id}
+| Method | Endpoint                 |
+| ------ | ------------------------ |
+| GET    | /weather/current/{city}  |
+| GET    | /weather/forecast/{city} |
+| GET    | /weather/current/coords  |
 
 ---
 
-### Export APIs
-GET /export/json
-GET /export/csv
+## CRUD APIs
+
+| Method | Endpoint             |
+| ------ | -------------------- |
+| POST   | /weather/            |
+| GET    | /weather/            |
+| GET    | /weather/{record_id} |
+| PUT    | /weather/{record_id} |
+| DELETE | /weather/{record_id} |
 
 ---
 
-## 📊 Example Response
+## Export APIs
 
+| Method | Endpoint     |
+| ------ | ------------ |
+| GET    | /export/json |
+| GET    | /export/csv  |
+
+---
+
+# 🧪 Example Stored Record
+
+```json
 {
-  "city": "Tokyo",
+  "id": 2,
+  "location": "Tokyo",
+  "country": "Japan",
+  "start_date": "2026-06-01",
+  "end_date": "2026-06-05",
   "latitude": 35.6895,
   "longitude": 139.6917,
-  "map": "https://www.google.com/maps?q=35.6895,139.6917",
-  "weather": {
-    "temperature": 21.5,
-    "windspeed": 4.2
-  }
+  "temperature": 21.5,
+  "windspeed": 4.2,
+  "weathercode": 55
 }
+```
 
 ---
 
-## 🧠 Highlights
+# 🎯 Assessment Requirements Coverage
 
-- Clean REST API design
-- Real-time weather integration
-- Full CRUD with database
-- Export system (JSON + CSV)
-- Modular FastAPI architecture
+| Requirement             | Status |
+| ----------------------- | ------ |
+| REST API Development    | ✅      |
+| CRUD Operations         | ✅      |
+| SQL Database            | ✅      |
+| Data Persistence        | ✅      |
+| Weather API Integration | ✅      |
+| Forecast Support        | ✅      |
+| Date Validation         | ✅      |
+| Google Maps Integration | ✅      |
+| Export Functionality    | ✅      |
+| Error Handling          | ✅      |
+| OpenAPI Documentation   | ✅      |
 
 ---
 
-## 👨‍💻 Author
+# 🌟 PM Accelerator Mission
 
-Satya Anandh  
-AI/ML Engineer | FastAPI | Agentic AI Systems
+PM Accelerator helps aspiring professionals build real-world technical, product, and leadership skills through hands-on projects, mentorship, and industry-focused learning experiences.
 
-GitHub: https://github.com/satyanandh-ai
+This project was developed as part of the PM Accelerator AI Engineer Internship Technical Assessment.
 
 ---
 
-## 📌 Notes
+# 👨‍💻 Author
 
-- Built for internship submission
-- Backend-focused project
-- Can be extended to full-stack (React frontend possible)
+**Satya Anandh**
+
+AI/ML Engineer • FastAPI Developer • Agentic AI Builder
+
+GitHub:
+https://github.com/satyanandh-ai
+
+LinkedIn:
+(Add your LinkedIn profile link)
+
+---
+
+# 📄 License
+
+This project is open source and available for educational and assessment purposes.
