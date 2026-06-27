@@ -1,18 +1,49 @@
 from sqlalchemy.orm import Session
+from datetime import datetime
 from .models import WeatherSearch
 
 
+# -----------------------------
 # CREATE
-def create_weather_search(db: Session, data: dict):
+# -----------------------------
+def create_weather_search(
+    db: Session,
+    location: str,
+    country: str,
+    start_date: str,
+    end_date: str,
+    latitude: float,
+    longitude: float,
+    temperature: float,
+    windspeed: float,
+    weathercode: int
+):
+
+    # Validate date format
+    try:
+        start = datetime.strptime(start_date, "%Y-%m-%d")
+        end = datetime.strptime(end_date, "%Y-%m-%d")
+    except ValueError:
+        return {
+            "error": "Invalid date format. Use YYYY-MM-DD"
+        }
+
+    # Validate date range
+    if start > end:
+        return {
+            "error": "start_date cannot be greater than end_date"
+        }
 
     record = WeatherSearch(
-        location=data.get("location"),
-        country=data.get("country"),
-        latitude=data.get("latitude"),
-        longitude=data.get("longitude"),
-        temperature=data.get("temperature"),
-        windspeed=data.get("windspeed"),
-        weathercode=data.get("weathercode")
+        location=location,
+        country=country,
+        start_date=start_date,
+        end_date=end_date,
+        latitude=latitude,
+        longitude=longitude,
+        temperature=temperature,
+        windspeed=windspeed,
+        weathercode=weathercode
     )
 
     db.add(record)
@@ -22,13 +53,20 @@ def create_weather_search(db: Session, data: dict):
     return record
 
 
+# -----------------------------
 # READ ALL
+# -----------------------------
 def get_all_weather_searches(db: Session):
     return db.query(WeatherSearch).all()
 
 
-# READ ONE
-def get_weather_search_by_id(db: Session, record_id: int):
+# -----------------------------
+# READ BY ID
+# -----------------------------
+def get_weather_search_by_id(
+    db: Session,
+    record_id: int
+):
     return (
         db.query(WeatherSearch)
         .filter(WeatherSearch.id == record_id)
@@ -36,8 +74,17 @@ def get_weather_search_by_id(db: Session, record_id: int):
     )
 
 
+# -----------------------------
 # UPDATE
-def update_weather_search(db: Session, record_id: int, data: dict):
+# -----------------------------
+def update_weather_search(
+    db: Session,
+    record_id: int,
+    location: str,
+    country: str,
+    temperature: float,
+    windspeed: float
+):
 
     record = (
         db.query(WeatherSearch)
@@ -46,12 +93,14 @@ def update_weather_search(db: Session, record_id: int, data: dict):
     )
 
     if not record:
-        return None
+        return {
+            "error": "Record not found"
+        }
 
-    record.location = data.get("location", record.location)
-    record.country = data.get("country", record.country)
-    record.temperature = data.get("temperature", record.temperature)
-    record.windspeed = data.get("windspeed", record.windspeed)
+    record.location = location
+    record.country = country
+    record.temperature = temperature
+    record.windspeed = windspeed
 
     db.commit()
     db.refresh(record)
@@ -59,8 +108,13 @@ def update_weather_search(db: Session, record_id: int, data: dict):
     return record
 
 
+# -----------------------------
 # DELETE
-def delete_weather_search(db: Session, record_id: int):
+# -----------------------------
+def delete_weather_search(
+    db: Session,
+    record_id: int
+):
 
     record = (
         db.query(WeatherSearch)
@@ -69,9 +123,13 @@ def delete_weather_search(db: Session, record_id: int):
     )
 
     if not record:
-        return None
+        return {
+            "error": "Record not found"
+        }
 
     db.delete(record)
     db.commit()
 
-    return {"message": "Deleted successfully"}
+    return {
+        "message": "Record deleted successfully"
+    }

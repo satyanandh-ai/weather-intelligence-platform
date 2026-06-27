@@ -8,11 +8,14 @@ class WeatherSearch(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     location = Column(String, nullable=False)
-    country = Column(String, nullable=True)
+    country = Column(String)
 
-    latitude = Column(Float, nullable=True)
-    longitude = Column(Float, nullable=True)
+    start_date = Column(String)
+    end_date = Column(String)
 
-    temperature = Column(Float, nullable=True)
-    windspeed = Column(Float, nullable=True)
-    weathercode = Column(Integer, nullable=True)
+    latitude = Column(Float)
+    longitude = Column(Float)
+
+    temperature = Column(Float)
+    windspeed = Column(Float)
+    weathercode = Column(Integer)

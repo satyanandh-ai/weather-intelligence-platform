@@ -3,30 +3,38 @@ from pydantic import BaseModel
 
 class WeatherCreate(BaseModel):
     location: str
-    country: str | None = None
-    latitude: float | None = None
-    longitude: float | None = None
-    temperature: float | None = None
-    windspeed: float | None = None
-    weathercode: int | None = None
+    country: str
+    start_date: str
+    end_date: str
+    latitude: float
+    longitude: float
+    temperature: float
+    windspeed: float
+    weathercode: int
 
 
 class WeatherUpdate(BaseModel):
-    location: str | None = None
-    country: str | None = None
-    temperature: float | None = None
-    windspeed: float | None = None
+    location: str
+    country: str
+    temperature: float
+    windspeed: float
 
 
 class WeatherResponse(BaseModel):
     id: int
+
     location: str
-    country: str | None = None
-    latitude: float | None = None
-    longitude: float | None = None
-    temperature: float | None = None
-    windspeed: float | None = None
-    weathercode: int | None = None
+    country: str
+
+    start_date: str
+    end_date: str
+
+    latitude: float
+    longitude: float
+
+    temperature: float
+    windspeed: float
+    weathercode: int
 
     class Config:
         from_attributes = True
